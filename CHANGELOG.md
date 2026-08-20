@@ -136,6 +136,13 @@ tada još nije bio pod verzionom kontrolom.
   - `InvoiceFormHttpRoundTripTest` vozi formular kroz stvarni `/livewire/update` krug,
     sa vrednostima kakve `<select>` zaista šalje. `Volt::test()` poziva komponentu
     direktno i preskoči hidraciju, pa ne može da uhvati grešku koja postoji samo na žici.
+- **Onemogućen prazan `<option>` u padajućim listama.** Placeholder je bio `disabled`,
+  a pregledač ne može da drži onemogućenu opciju kao izabranu, pa je prikazivao prvu
+  stvarnu. Korisnik je video partnera u polju, ali pošto ništa nije menjao, `change` se
+  nije okidao i izbor nikada nije stizao do servera — otud „The partner id field is
+  required" uz naizgled izabranog partnera. Uklonjen je `disabled`, a uz to i Fluxov
+  `placeholder` prop tamo gde ekran već iscrtava sopstvenu praznu opciju, jer su nastajale
+  dve prazne opcije u istom selectu.
 
 ---
 

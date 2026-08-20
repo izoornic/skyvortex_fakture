@@ -303,7 +303,7 @@ new class extends Component {
 
                 <div class="sm:col-span-2">
                     <flux:select wire:model.live="partner_id" label="Partner" required>
-                        <flux:select.option value="" class="placeholder" disabled :selected="! $partner_id">Izaberi partnera</flux:select.option>
+                        <flux:select.option value="" class="placeholder" :selected="! $partner_id">Izaberi partnera</flux:select.option>
                         @foreach ($partners as $partner)
                             <flux:select.option value="{{ $partner->id }}" :selected="$partner->id === $partner_id">
                                 {{ $partner->name }}{{ $partner->pib ? ' — '.$partner->pib : '' }}
@@ -340,7 +340,7 @@ new class extends Component {
                         description="Unosi se ručno" required />
                 @endif
 
-                <flux:select wire:model="bank_account_id" label="Račun za uplatu" placeholder="Primarni račun">
+                <flux:select wire:model="bank_account_id" label="Račun za uplatu">
                     <flux:select.option value="" :selected="! $bank_account_id">Primarni račun</flux:select.option>
                     @foreach ($company->bankAccounts as $account)
                         <flux:select.option value="{{ $account->id }}" :selected="$account->id === $bank_account_id">
@@ -352,7 +352,7 @@ new class extends Component {
 
             @if ($exemptionReasons->isNotEmpty())
                 <div class="mt-4 max-w-xl">
-                    <flux:select wire:model="vat_exemption_reason_id" label="Osnov oslobođenja od PDV-a" placeholder="Nije primenljivo">
+                    <flux:select wire:model="vat_exemption_reason_id" label="Osnov oslobođenja od PDV-a">
                         <flux:select.option value="" :selected="! $vat_exemption_reason_id">Nije primenljivo</flux:select.option>
                         @foreach ($exemptionReasons as $reason)
                             <flux:select.option value="{{ $reason->id }}" :selected="$reason->id === $vat_exemption_reason_id">

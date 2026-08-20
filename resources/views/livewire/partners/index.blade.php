@@ -72,7 +72,7 @@ new class extends Component {
             <flux:input class="max-w-xs" wire:model.live.debounce.300ms="search"
                 icon="magnifying-glass" placeholder="Naziv, PIB, matični broj ili mesto" />
 
-            <flux:select class="max-w-48" wire:model.live="type" placeholder="Svi tipovi">
+            <flux:select class="max-w-48" wire:model.live="type">
                 <flux:select.option value="" :selected="$type === ''">Svi tipovi</flux:select.option>
                 @foreach ($types as $value => $label)
                     <flux:select.option value="{{ $value }}" :selected="$value === $type">{{ $label }}</flux:select.option>
