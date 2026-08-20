@@ -15,9 +15,13 @@ class CompanyFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->company();
+
         return [
-            'name' => fake()->company().' d.o.o.',
-            'short_name' => fake()->company(),
+            'name' => $name.' d.o.o.',
+            // Derived from the name, the way a real short name would be. Two
+            // unrelated faker names made one company look like two.
+            'short_name' => rtrim(explode(' ', $name)[0], ','),
             'pib' => (string) fake()->unique()->numberBetween(100000000, 999999999),
             'registration_number' => (string) fake()->numberBetween(10000000, 99999999),
             'address' => fake()->streetAddress(),

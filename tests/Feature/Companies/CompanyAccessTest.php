@@ -43,6 +43,32 @@ class CompanyAccessTest extends TestCase
             ->assertSee('Druga firma');
     }
 
+    /**
+     * The switcher and every other screen label a company with its short name,
+     * so the list has to show it as well — otherwise the entry a user picked in
+     * the switcher cannot be found again here.
+     */
+    public function test_the_list_shows_the_same_label_the_switcher_uses(): void
+    {
+        $company = Company::factory()->create([
+            'name' => 'Јагличић PLC d.o.o.',
+            'short_name' => 'Јагличић',
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get('/companies')
+            ->assertOk()
+            ->assertSee($company->name)
+            ->assertSee($company->displayName());
+    }
+
+    public function test_the_factory_derives_the_short_name_from_the_name(): void
+    {
+        $company = Company::factory()->create();
+
+        $this->assertStringStartsWith($company->short_name, $company->name);
+    }
+
     public function test_bookkeeper_cannot_open_the_create_form(): void
     {
         $this->actingAs(User::factory()->bookkeeper()->create())

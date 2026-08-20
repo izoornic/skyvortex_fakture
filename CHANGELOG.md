@@ -115,6 +115,13 @@ tada još nije bio pod verzionom kontrolom.
 
 ### Ispravljeno
 
+- Lista pravnih lica na `/companies` prikazivala je samo `name`, dok prekidač u bočnoj
+  traci i svi ostali ekrani prikazuju `displayName()`, tj. `short_name` kada postoji.
+  Ista firma se zato na dva mesta zvala različito i nije se mogla povezati. Lista sada
+  prikazuje i skraćeni naziv, kada se razlikuje od punog.
+- `CompanyFactory` je za `name` i `short_name` generisala dva nepovezana nasumična naziva,
+  pa je u seed podacima jedna firma delovala kao dve. Skraćeni naziv se sada izvodi iz punog.
+
 ---
 
 ## [1.0.0] — 2026-08-20

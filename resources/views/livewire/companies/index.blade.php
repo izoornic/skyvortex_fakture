@@ -90,6 +90,12 @@ new class extends Component {
                         <flux:table.row :key="$company->id">
                             <flux:table.cell class="whitespace-normal">
                                 <div class="font-medium">{{ $company->name }}</div>
+                                {{-- The switcher and every other screen show the short name,
+                                     so it has to be visible here too or the same company
+                                     looks like two different ones. --}}
+                                @if ($company->short_name && $company->short_name !== $company->name)
+                                    <div class="text-xs text-zinc-500">{{ $company->short_name }}</div>
+                                @endif
                                 @unless ($company->is_active)
                                     <flux:badge size="sm" color="zinc">neaktivno</flux:badge>
                                 @endunless
