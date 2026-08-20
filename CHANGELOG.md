@@ -73,6 +73,25 @@ tada još nije bio pod verzionom kontrolom.
     prijavljuje neispravne redove umesto da prekine uvoz, i po izboru ažurira postojeće
     partnere prepoznate po PIB-u.
   - 31 nov test. Ukupno 96 testova prolazi.
+- **M2 — fakture.** Jezgro sistema: dokument sa stavkama od nacrta do izdavanja i PDF-a.
+  - Tabele `invoices` i `invoice_items`. Broj se dodeljuje tek pri izdavanju, pa nacrt
+    ne zauzima broj koji možda neće iskoristiti.
+  - `App\Actions\Invoices\GenerateInvoiceNumber` dodeljuje broj uz `lockForUpdate` i
+    odbija da radi van transakcije, jer zaključavanje van nje ništa ne znači.
+  - `App\Support\PaymentReference` računa poziv na broj po modelu 97
+    (ISO 7064 MOD 97-10). Hvata svaku izmenu jedne cifre u referenci.
+  - `App\Support\InvoiceTotals` računa iznose po stavci pa sabira po PDV kategoriji i
+    stopi — tako se štampana rekapitulacija slaže sa ukupnim iznosom.
+  - Tok: nacrt → izdata → stornirana. Izdata faktura se ne menja; `IssueInvoice` odbija
+    dokument bez stavki i dokument u stranoj valuti bez kursa.
+  - `CancelInvoice` beleži ko je, kada i zašto stornirao, i **zadržava broj** — praznina
+    u nizu bila bi teža za objašnjenje od storna.
+  - Strana valuta: kurs se unosi ručno, a protivvrednost u RSD se čuva uz dokument da je
+    izveštaji u M6 ne moraju ponovo računati.
+  - Mesečni pregled sa kretanjem po mesecima, filterima i zbirom prometa.
+  - PDF preko `barryvdh/laravel-dompdf`, sa ugrađenim DejaVu fontom zbog naših slova;
+    slanje mejlom sa PDF-om u prilogu preko `App\Mail\InvoiceMail`.
+  - 43 nova testa. Ukupno 139 testova prolazi.
 
 ### Izmenjeno
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvoicePdfController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -30,6 +31,12 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('partners/create', 'partners.form')->name('partners.create');
     Volt::route('partners/import', 'partners.import')->name('partners.import');
     Volt::route('partners/{partner}/edit', 'partners.form')->name('partners.edit');
+
+    Volt::route('fakture', 'invoices.index')->name('invoices.index');
+    Volt::route('fakture/nova', 'invoices.form')->name('invoices.create');
+    Volt::route('fakture/{invoice}', 'invoices.show')->name('invoices.show');
+    Volt::route('fakture/{invoice}/izmena', 'invoices.form')->name('invoices.edit');
+    Route::get('fakture/{invoice}/pdf', InvoicePdfController::class)->name('invoices.pdf');
 
     Volt::route('sifarnici/valute', 'codebooks.currencies')->name('codebooks.currencies');
     Volt::route('sifarnici/jedinice-mere', 'codebooks.units')->name('codebooks.units');

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Partner extends Model
 {
@@ -62,6 +63,11 @@ class Partner extends Model
             // Personal data never sits in the database in the clear.
             'jmbg' => 'encrypted',
         ];
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 
     #[Scope]

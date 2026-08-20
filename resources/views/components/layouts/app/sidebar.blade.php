@@ -21,6 +21,7 @@
                 </flux:navlist.group>
 
                 <flux:navlist.group heading="Fakturisanje" class="grid">
+                    <flux:navlist.item icon="document-text" :href="route('invoices.index')" :current="request()->routeIs('invoices.*')" wire:navigate>Fakture</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('partners.index')" :current="request()->routeIs('partners.*')" wire:navigate>Partneri</flux:navlist.item>
                 </flux:navlist.group>
 
