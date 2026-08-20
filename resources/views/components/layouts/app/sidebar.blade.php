@@ -11,9 +11,21 @@
                 <x-app-logo class="size-8" href="#"></x-app-logo>
             </a>
 
+            <div class="mb-2 px-1">
+                <livewire:company-switcher />
+            </div>
+
             <flux:navlist variant="outline">
-                <flux:navlist.group heading="Platform" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>Dashboard</flux:navlist.item>
+                <flux:navlist.group heading="Pregled" class="grid">
+                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>Kontrolna tabla</flux:navlist.item>
+                </flux:navlist.group>
+
+                <flux:navlist.group heading="Podešavanje" class="grid">
+                    <flux:navlist.item icon="building-office" :href="route('companies.index')" :current="request()->routeIs('companies.*')" wire:navigate>Pravna lica</flux:navlist.item>
+
+                    @can('viewAny', App\Models\User::class)
+                        <flux:navlist.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>Korisnici</flux:navlist.item>
+                    @endcan
                 </flux:navlist.group>
             </flux:navlist>
 

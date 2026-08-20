@@ -31,6 +31,26 @@ tada još nije bio pod verzionom kontrolom.
   koji `php artisan boost:install` briše — posle svakog pokretanja treba ga vratiti.
 - `docs/plan-razvoja.md` — plan razvoja aplikacije: opseg faze 1 i faze 2 (SEF),
   model podataka, tehničke odluke, faze isporuke M0–M9, rizici i otvorena pitanja.
+- **M0 — temelji pristupa.** Uloge, dodela pravnih lica i višekompanijski scoping:
+  - `role` na `users` (`admin` / `knjigovodja`) preko enuma `App\Enums\UserRole`, uz
+    `company_user` pivot za dodelu pravnih lica knjigovođi.
+  - Tabele `companies`, `bank_accounts`, `invoice_number_sequences` i `audit_logs`.
+  - `App\Support\CurrentCompany` drži aktivno pravno lice u sesiji i uvek ga proverava
+    kroz dozvoljena pravna lica korisnika, pa izmenjena sesija ne može proširiti pristup.
+  - `App\Models\Scopes\CompanyScope` i trait `BelongsToCompany` ograničavaju svaki upit
+    nad podacima pravnog lica; `acrossCompanies()` je svesni izlaz za izveštaje i konzolu.
+  - Politike `CompanyPolicy`, `BankAccountPolicy` i `UserPolicy` — pravna lica i korisnike
+    uređuje samo admin, knjigovođa ih vidi i koristi.
+  - Trait `Auditable` i model `AuditLog` beleže ko je šta promenio, bez lozinki i tokena.
+  - Enum `App\Enums\DocumentType` nosi prefikse i šablon broja (`2026-0001`, `AV-`, `KO-`,
+    `KZ-`, `PR-`); brojač se pri unosu firme postavlja na poslednji broj iskorišćen van
+    aplikacije.
+  - Ekrani: lista i formular pravnih lica sa bankovnim računima, lista i formular
+    korisnika sa dodelom pravnih lica, prekidač aktivnog pravnog lica u bočnoj traci.
+  - Seeder pravi `admin@skyvortex.test` i `knjigovodja@skyvortex.test` (lozinka `password`),
+    tri pravna lica i dodelu samo prvog knjigovođi.
+  - 38 novih testova pokriva scoping, prekidač, numeraciju, bankovne račune, politike
+    pristupa i revizioni trag. Ukupno 65 testova prolazi.
 
 ### Izmenjeno
 
