@@ -133,6 +133,9 @@ tada još nije bio pod verzionom kontrolom.
     PDV kategoriju, valutu, račun za uplatu, vrstu dokumenta, tip partnera i uloge.
   - Sve `flux:select.option` liste sada iscrtavaju `selected` prema stanju na serveru,
     a placeholder partnera je izabran samo dok ništa nije izabrano.
+  - `InvoiceFormHttpRoundTripTest` vozi formular kroz stvarni `/livewire/update` krug,
+    sa vrednostima kakve `<select>` zaista šalje. `Volt::test()` poziva komponentu
+    direktno i preskoči hidraciju, pa ne može da uhvati grešku koja postoji samo na žici.
 
 ---
 
