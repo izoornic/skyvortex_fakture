@@ -100,7 +100,7 @@ new class extends Component {
 
         <flux:select wire:model.live="role" label="Uloga" required>
             @foreach ($roles as $value => $label)
-                <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                <flux:select.option value="{{ $value }}" :selected="$value === $role">{{ $label }}</flux:select.option>
             @endforeach
         </flux:select>
 

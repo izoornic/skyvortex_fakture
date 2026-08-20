@@ -133,9 +133,9 @@ new class extends Component {
                 icon="magnifying-glass" placeholder="Broj ili partner" />
 
             <flux:select class="max-w-48" wire:model.live="status">
-                <flux:select.option value="">Svi statusi</flux:select.option>
+                <flux:select.option value="" :selected="$status === ''">Svi statusi</flux:select.option>
                 @foreach ($statuses as $value => $label)
-                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                    <flux:select.option value="{{ $value }}" :selected="$value === $status">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
         </div>

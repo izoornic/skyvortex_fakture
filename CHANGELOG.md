@@ -121,6 +121,18 @@ tada još nije bio pod verzionom kontrolom.
   prikazuje i skraćeni naziv, kada se razlikuje od punog.
 - `CompanyFactory` je za `name` i `short_name` generisala dva nepovezana nasumična naziva,
   pa je u seed podacima jedna firma delovala kao dve. Skraćeni naziv se sada izvodi iz punog.
+- **Padajuće liste gubile su izabranu vrednost pri svakom osvežavanju.** Nijedan
+  `<option>` nije nosio `selected`, pa je Livewire posle round-tripa vraćao pregledaču
+  listu bez izbora. Gde postoji placeholder, pregledač bi se vratio na njega; gde ga
+  nema, na prvu opciju. Server je čuvao pravu vrednost, ekran je pokazivao drugu, a pri
+  slanju forme odlazilo je ono što piše na ekranu.
+  - Prijavljena posledica: izabrani partner na `/fakture/nova` vraćao je grešku
+    „The partner id field is required".
+  - Neprijavljena, teža posledica: stavka sa 10% PDV-a mogla je da se sačuva sa 20%,
+    jer se stopa nečujno vraćala na prvu ponuđenu. Isto je važilo za jedinicu mere,
+    PDV kategoriju, valutu, račun za uplatu, vrstu dokumenta, tip partnera i uloge.
+  - Sve `flux:select.option` liste sada iscrtavaju `selected` prema stanju na serveru,
+    a placeholder partnera je izabran samo dok ništa nije izabrano.
 
 ---
 

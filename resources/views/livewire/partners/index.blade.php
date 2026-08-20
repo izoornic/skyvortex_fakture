@@ -73,9 +73,9 @@ new class extends Component {
                 icon="magnifying-glass" placeholder="Naziv, PIB, matični broj ili mesto" />
 
             <flux:select class="max-w-48" wire:model.live="type" placeholder="Svi tipovi">
-                <flux:select.option value="">Svi tipovi</flux:select.option>
+                <flux:select.option value="" :selected="$type === ''">Svi tipovi</flux:select.option>
                 @foreach ($types as $value => $label)
-                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                    <flux:select.option value="{{ $value }}" :selected="$value === $type">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
 

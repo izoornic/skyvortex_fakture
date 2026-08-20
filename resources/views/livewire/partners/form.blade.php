@@ -142,7 +142,7 @@ new class extends Component {
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:select wire:model.live="type" label="Tip" required>
                     @foreach ($types as $value => $label)
-                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                        <flux:select.option value="{{ $value }}" :selected="$value === $type">{{ $label }}</flux:select.option>
                     @endforeach
                 </flux:select>
 
@@ -192,7 +192,7 @@ new class extends Component {
 
                 <flux:select wire:model="default_currency" label="Podrazumevana valuta" required>
                     @foreach ($currencies as $currency)
-                        <flux:select.option value="{{ $currency->code }}">
+                        <flux:select.option value="{{ $currency->code }}" :selected="$currency->code === $default_currency">
                             {{ $currency->code }} — {{ $currency->name }}
                         </flux:select.option>
                     @endforeach

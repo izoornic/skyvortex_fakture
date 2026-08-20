@@ -159,7 +159,7 @@ new class extends Component {
 
                     <flux:select wire:model="vat_category" label="PDV kategorija" required>
                         @foreach ($categories as $value => $label)
-                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                            <flux:select.option value="{{ $value }}" :selected="$value === $vat_category">{{ $label }}</flux:select.option>
                         @endforeach
                     </flux:select>
 

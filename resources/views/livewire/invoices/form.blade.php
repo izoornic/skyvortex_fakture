@@ -297,14 +297,15 @@ new class extends Component {
             <div class="grid gap-4 sm:grid-cols-3">
                 <flux:select wire:model="type" label="Vrsta dokumenta" required>
                     @foreach ($documentTypes as $value => $label)
-                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                        <flux:select.option value="{{ $value }}" :selected="$value === $type">{{ $label }}</flux:select.option>
                     @endforeach
                 </flux:select>
 
                 <div class="sm:col-span-2">
-                    <flux:select wire:model.live="partner_id" label="Partner" placeholder="Izaberi partnera" required>
+                    <flux:select wire:model.live="partner_id" label="Partner" required>
+                        <flux:select.option value="" class="placeholder" disabled :selected="! $partner_id">Izaberi partnera</flux:select.option>
                         @foreach ($partners as $partner)
-                            <flux:select.option value="{{ $partner->id }}">
+                            <flux:select.option value="{{ $partner->id }}" :selected="$partner->id === $partner_id">
                                 {{ $partner->name }}{{ $partner->pib ? ' — '.$partner->pib : '' }}
                             </flux:select.option>
                         @endforeach
@@ -330,7 +331,7 @@ new class extends Component {
             <div class="grid gap-4 sm:grid-cols-3">
                 <flux:select wire:model.live="currency" label="Valuta" required>
                     @foreach ($currencies as $currency)
-                        <flux:select.option value="{{ $currency->code }}">{{ $currency->code }}</flux:select.option>
+                        <flux:select.option value="{{ $currency->code }}" :selected="$currency->code === $this->currency">{{ $currency->code }}</flux:select.option>
                     @endforeach
                 </flux:select>
 
@@ -340,9 +341,9 @@ new class extends Component {
                 @endif
 
                 <flux:select wire:model="bank_account_id" label="Račun za uplatu" placeholder="Primarni račun">
-                    <flux:select.option value="">Primarni račun</flux:select.option>
+                    <flux:select.option value="" :selected="! $bank_account_id">Primarni račun</flux:select.option>
                     @foreach ($company->bankAccounts as $account)
-                        <flux:select.option value="{{ $account->id }}">
+                        <flux:select.option value="{{ $account->id }}" :selected="$account->id === $bank_account_id">
                             {{ $account->formattedAccountNumber() }} — {{ $account->bank_name }}
                         </flux:select.option>
                     @endforeach
@@ -352,9 +353,9 @@ new class extends Component {
             @if ($exemptionReasons->isNotEmpty())
                 <div class="mt-4 max-w-xl">
                     <flux:select wire:model="vat_exemption_reason_id" label="Osnov oslobođenja od PDV-a" placeholder="Nije primenljivo">
-                        <flux:select.option value="">Nije primenljivo</flux:select.option>
+                        <flux:select.option value="" :selected="! $vat_exemption_reason_id">Nije primenljivo</flux:select.option>
                         @foreach ($exemptionReasons as $reason)
-                            <flux:select.option value="{{ $reason->id }}">
+                            <flux:select.option value="{{ $reason->id }}" :selected="$reason->id === $vat_exemption_reason_id">
                                 {{ $reason->code }} — {{ $reason->description }}
                             </flux:select.option>
                         @endforeach
@@ -399,7 +400,7 @@ new class extends Component {
 
                             <flux:select wire:model="items.{{ $index }}.unit_code" label="Jedinica">
                                 @foreach ($units as $unit)
-                                    <flux:select.option value="{{ $unit->code }}">{{ $unit->displayName() }}</flux:select.option>
+                                    <flux:select.option value="{{ $unit->code }}" :selected="$unit->code === $item['unit_code']">{{ $unit->displayName() }}</flux:select.option>
                                 @endforeach
                             </flux:select>
 
@@ -421,7 +422,7 @@ new class extends Component {
                             @if ($company->in_vat_system)
                                 <flux:select wire:model.live="items.{{ $index }}.vat_rate" label="PDV stopa">
                                     @foreach ($vatRates as $rate)
-                                        <flux:select.option value="{{ (float) $rate->rate }}">
+                                        <flux:select.option value="{{ (float) $rate->rate }}" :selected="(float) $rate->rate === (float) $item['vat_rate']">
                                             {{ $rate->rate }}%
                                         </flux:select.option>
                                     @endforeach
@@ -430,7 +431,7 @@ new class extends Component {
                                 <div class="sm:col-span-2">
                                     <flux:select wire:model="items.{{ $index }}.vat_category" label="PDV kategorija">
                                         @foreach ($vatCategories as $value => $label)
-                                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                            <flux:select.option value="{{ $value }}" :selected="$value === $item['vat_category']">{{ $label }}</flux:select.option>
                                         @endforeach
                                     </flux:select>
                                 </div>

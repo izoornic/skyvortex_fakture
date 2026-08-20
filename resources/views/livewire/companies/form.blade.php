@@ -191,7 +191,7 @@ new class extends Component {
 
                 <flux:select wire:model="default_currency" label="Podrazumevana valuta" required>
                     @foreach ($currencies as $currency)
-                        <flux:select.option value="{{ $currency }}">{{ $currency }}</flux:select.option>
+                        <flux:select.option value="{{ $currency }}" :selected="$currency === $default_currency">{{ $currency }}</flux:select.option>
                     @endforeach
                 </flux:select>
             </div>
