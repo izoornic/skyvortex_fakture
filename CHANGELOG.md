@@ -51,6 +51,28 @@ tada još nije bio pod verzionom kontrolom.
     tri pravna lica i dodelu samo prvog knjigovođi.
   - 38 novih testova pokriva scoping, prekidač, numeraciju, bankovne račune, politike
     pristupa i revizioni trag. Ukupno 65 testova prolazi.
+- **M1 — šifarnici i partneri.**
+  - Tabela `partners` sa sva četiri tipa preko enuma `App\Enums\PartnerType`
+    (pravno lice, preduzetnik, fizičko lice, strano lice). Formular menja obavezna
+    polja prema tipu i briše identifikatore koji za novi tip nemaju smisla.
+  - **JMBG se čuva šifrovano** (`encrypted` cast), ne ulazi u revizioni trag i
+    skriven je pri serijalizaciji.
+  - `App\Support\PartnerRules` je jedina definicija ispravnog partnera, koju dele
+    formular i uvoz. Tu je i pravilo da izdavalac ne može biti partner sam sebi,
+    provereno po PIB-u.
+  - Isti PIB je jedinstven unutar jednog pravnog lica, ali sme postojati kod više njih.
+  - Šifarnici `currencies`, `units_of_measure`, `vat_rates` i `vat_exemption_reasons`,
+    zajednički za sva pravna lica; čita ih svako, uređuje ih admin (gate `manage-codebooks`).
+  - `ReferenceDataSeeder` puni valute, 20 jedinica mere po UN/ECE Rec 20 i PDV stope
+    (20%, 10%, 0%); može se pokretati više puta bez dupliranja.
+  - PDV stope imaju period važenja, pa stara faktura zadržava stopu koja je važila
+    na datum prometa. Enum `App\Enums\VatCategory` nosi šifre po UNTDID 5305 / EN 16931,
+    koje traži UBL u fazi 2.
+  - `App\Actions\ImportPartners` uvozi partnere iz CSV-a: prepoznaje razdvajač
+    (tačka-zarez ili zarez), mapira zaglavlje na srpske nazive kolona, validira red po red,
+    prijavljuje neispravne redove umesto da prekine uvoz, i po izboru ažurira postojeće
+    partnere prepoznate po PIB-u.
+  - 31 nov test. Ukupno 96 testova prolazi.
 
 ### Izmenjeno
 

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Support\CurrentCompany;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Codebooks are national or international standards shared by every
+        // company, so they are read by all and maintained by administrators.
+        Gate::define('manage-codebooks', fn (User $user) => $user->isAdmin());
     }
 }

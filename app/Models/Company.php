@@ -74,6 +74,11 @@ class Company extends Model
         return $this->hasMany(InvoiceNumberSequence::class);
     }
 
+    public function partners(): HasMany
+    {
+        return $this->hasMany(Partner::class);
+    }
+
     #[Scope]
     protected function active(Builder $query): Builder
     {

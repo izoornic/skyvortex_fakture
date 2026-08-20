@@ -20,8 +20,14 @@
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>Kontrolna tabla</flux:navlist.item>
                 </flux:navlist.group>
 
+                <flux:navlist.group heading="Fakturisanje" class="grid">
+                    <flux:navlist.item icon="users" :href="route('partners.index')" :current="request()->routeIs('partners.*')" wire:navigate>Partneri</flux:navlist.item>
+                </flux:navlist.group>
+
                 <flux:navlist.group heading="Podešavanje" class="grid">
                     <flux:navlist.item icon="building-office" :href="route('companies.index')" :current="request()->routeIs('companies.*')" wire:navigate>Pravna lica</flux:navlist.item>
+
+                    <flux:navlist.item icon="list-bullet" :href="route('codebooks.currencies')" :current="request()->routeIs('codebooks.*')" wire:navigate>Šifarnici</flux:navlist.item>
 
                     @can('viewAny', App\Models\User::class)
                         <flux:navlist.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>Korisnici</flux:navlist.item>

@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(ReferenceDataSeeder::class);
+
         $admin = User::factory()->admin()->create([
             'name' => 'Administrator',
             'email' => 'admin@skyvortex.test',
