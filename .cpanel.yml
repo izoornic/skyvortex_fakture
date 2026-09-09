@@ -18,6 +18,9 @@ deployment:
     # `cp -a *` ne dira skrivene fajlove, pa .env, .git, .ai i .claude ostaju
     # kakvi jesu. vendor/ i node_modules/ nisu u repozitorijumu.
     - /bin/mkdir -p $DEPLOYPATH
+    # 711 mora eksplicitno: mkdir gore radi pod umask-om deploy procesa, koji
+    # napravi 700, a onda LiteSpeed ne moze da udje u folder i vraca 404.
+    - /bin/chmod 711 $DEPLOYPATH
     - /bin/cp -a * $DEPLOYPATH
     - /bin/rm -rf $DEPLOYPATH/tests
 

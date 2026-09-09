@@ -418,6 +418,12 @@ tada još nije bio pod verzionom kontrolom.
   `bootstrap/cache/{packages,services,config,compiled}.php` pre instalacije, da
   `package:discover` iz `post-autoload-dump` skripte ne čita zatečeni keš.
 
+- **Sajt je vraćao 404 iako je document root bio tačan.** `/bin/mkdir -p $DEPLOYPATH` u
+  `.cpanel.yml` pravi radni direktorijum pod umask-om deploy procesa, što daje dozvole
+  700; LiteSpeed onda ne može da uđe u `fakture_app` i odgovara sa 404 pre nego što
+  uopšte stigne do `public/index.php`. Dodat je `chmod 711 $DEPLOYPATH` odmah posle
+  `mkdir`-a.
+
 - **Na fakturama firme van sistema PDV-a nije pisao pravni osnov.** PDF je ispisivao samo
   „Izdavalac nije u sistemu PDV-a.", a dopunu sa članom zakona tek `@if` na
   `invoice->vatExemptionReason` — koji nikad nije bio popunjen, jer se osnov birao ručno
