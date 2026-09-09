@@ -2,6 +2,7 @@
 
 use App\Enums\PartnerType;
 use App\Models\Partner;
+use App\Models\PartnerGroup;
 use App\Support\CurrentCompany;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
@@ -17,6 +18,9 @@ new class extends Component {
     #[Url(as: 'tip', except: '')]
     public string $type = '';
 
+    #[Url(as: 'grupa', except: '')]
+    public string $groupId = '';
+
     #[Url(as: 'neaktivni', except: false)]
     public bool $includeInactive = false;
 
@@ -27,7 +31,7 @@ new class extends Component {
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['search', 'type', 'includeInactive'], true)) {
+        if (in_array($property, ['search', 'type', 'groupId', 'includeInactive'], true)) {
             $this->resetPage();
         }
     }
@@ -39,10 +43,13 @@ new class extends Component {
             'partners' => Partner::query()
                 ->when($this->search !== '', fn ($query) => $query->search($this->search))
                 ->when($this->type !== '', fn ($query) => $query->ofType(PartnerType::from($this->type)))
+                ->when($this->groupId !== '', fn ($query) => $query->inGroup((int) $this->groupId))
                 ->when(! $this->includeInactive, fn ($query) => $query->active())
+                ->with('partnerGroup')
                 ->orderBy('name')
                 ->paginate(config('global.paginate')),
             'types' => PartnerType::options(),
+            'groups' => PartnerGroup::query()->orderBy('name')->get(),
         ];
     }
 }; ?>
@@ -79,6 +86,18 @@ new class extends Component {
                 @endforeach
             </flux:select>
 
+            @if ($groups->isNotEmpty())
+                <flux:select class="max-w-56" wire:model.live="groupId">
+                    <flux:select.option value="" :selected="$groupId === ''">Sve grupe</flux:select.option>
+                    @foreach ($groups as $groupOption)
+                        <flux:select.option value="{{ $groupOption->id }}"
+                            :selected="(string) $groupOption->id === $groupId">
+                            {{ $groupOption->name }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
+
             <flux:checkbox wire:model.live="includeInactive" label="Prikaži i neaktivne" />
         </div>
 
@@ -96,6 +115,7 @@ new class extends Component {
                         <flux:table.column>Naziv</flux:table.column>
                         <flux:table.column>Tip</flux:table.column>
                         <flux:table.column>PIB / VAT</flux:table.column>
+                        <flux:table.column>Grupa</flux:table.column>
                         <flux:table.column>Mesto</flux:table.column>
                         <flux:table.column>Rok</flux:table.column>
                         <flux:table.column />
@@ -114,6 +134,13 @@ new class extends Component {
                                     <flux:badge size="sm" color="zinc">{{ $partner->type->label() }}</flux:badge>
                                 </flux:table.cell>
                                 <flux:table.cell variant="strong">{{ $partner->identifier() ?? '—' }}</flux:table.cell>
+                                <flux:table.cell class="whitespace-normal">
+                                    @if ($partner->partnerGroup)
+                                        <flux:badge size="sm" color="sky">{{ $partner->partnerGroup->name }}</flux:badge>
+                                    @else
+                                        <span class="text-zinc-400">—</span>
+                                    @endif
+                                </flux:table.cell>
                                 <flux:table.cell>{{ $partner->city ?? '—' }}</flux:table.cell>
                                 <flux:table.cell>{{ $partner->payment_days }} d</flux:table.cell>
                                 <flux:table.cell align="end">

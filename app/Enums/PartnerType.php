@@ -6,6 +6,7 @@ enum PartnerType: string
 {
     case LegalEntity = 'pravno_lice';
     case Entrepreneur = 'preduzetnik';
+    case HousingCommunity = 'stambena_zajednica';
     case Individual = 'fizicko_lice';
     case Foreign = 'strano_lice';
 
@@ -14,6 +15,7 @@ enum PartnerType: string
         return match ($this) {
             self::LegalEntity => 'Pravno lice',
             self::Entrepreneur => 'Preduzetnik',
+            self::HousingCommunity => 'Stambena zajednica',
             self::Individual => 'Fizičko lice',
             self::Foreign => 'Strano lice',
         };
@@ -21,10 +23,14 @@ enum PartnerType: string
 
     /**
      * Domestic company registers: PIB and matični broj are mandatory.
+     *
+     * A stambena zajednica belongs here — since the 2016 housing act it is a
+     * legal person, entered in the register kept by the local authority, and it
+     * carries both numbers like any other.
      */
     public function requiresTaxNumber(): bool
     {
-        return in_array($this, [self::LegalEntity, self::Entrepreneur], true);
+        return in_array($this, [self::LegalEntity, self::Entrepreneur, self::HousingCommunity], true);
     }
 
     /**

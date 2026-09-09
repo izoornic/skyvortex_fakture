@@ -2,53 +2,60 @@
 
 namespace Database\Seeders;
 
-use App\Enums\DocumentType;
-use App\Models\BankAccount;
+use App\Enums\UserRole;
 use App\Models\Company;
-use App\Models\InvoiceNumberSequence;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
+/**
+ * A working installation with no documents in it: codebooks, the real companies
+ * with their bank accounts, partner groups, partners and standing contracts, and
+ * the two accounts that sign in. Fakture come out of the contracts, so none are
+ * seeded.
+ *
+ * This is what a fresh production installation is filled with, which is why every
+ * seeder below matches its rows on a natural key and may be re-run.
+ */
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        $this->call(ReferenceDataSeeder::class);
-
-        $admin = User::factory()->admin()->create([
-            'name' => 'Administrator',
-            'email' => 'admin@skyvortex.test',
+        $this->call([
+            ReferenceDataSeeder::class,
+            CompanySeeder::class,
+            PartnerGroupSeeder::class,
+            PartnerSeeder::class,
+            ContractSeeder::class,
         ]);
 
-        $bookkeeper = User::factory()->bookkeeper()->create([
-            'name' => 'Knjigovođa',
-            'email' => 'knjigovodja@skyvortex.test',
-        ]);
+        $admin = $this->user('Administrator', 'admin@skyvortex.test', UserRole::Admin);
+        $bookkeeper = $this->user('Knjigovođa', 'knjigovodja@skyvortex.test', UserRole::Bookkeeper);
 
-        $companies = Company::factory()
-            ->count(3)
-            ->create()
-            ->each(function (Company $company, int $index) {
-                BankAccount::factory()->primary()->create([
-                    'company_id' => $company->id,
-                ]);
+        // The bookkeeper only reaches Digital Skyvortex; the admin reaches all.
+        $skyvortex = Company::where('pib', CompanySeeder::DIGITAL_SKYVORTEX_PIB)->first();
 
-                // Numbering continues after documents issued outside the app.
-                InvoiceNumberSequence::create([
-                    'company_id' => $company->id,
-                    'type' => DocumentType::Invoice,
-                    'year' => now()->year,
-                    'last_number' => ($index + 1) * 7,
-                ]);
-            });
-
-        // The bookkeeper only reaches the first company; the admin reaches all.
-        $bookkeeper->companies()->attach($companies->first());
+        if ($skyvortex !== null) {
+            $bookkeeper->companies()->syncWithoutDetaching($skyvortex);
+        }
 
         $this->command?->info("Admin: {$admin->email} / password");
         $this->command?->info("Knjigovođa: {$bookkeeper->email} / password");
+    }
+
+    /**
+     * The password is hashed by the model cast; `email_verified_at` is not
+     * fillable, so it is written after the row exists.
+     */
+    private function user(string $name, string $email, UserRole $role): User
+    {
+        $user = User::updateOrCreate(['email' => $email], [
+            'name' => $name,
+            'role' => $role,
+            'password' => 'password',
+        ]);
+
+        $user->forceFill(['email_verified_at' => now()])->save();
+
+        return $user;
     }
 }

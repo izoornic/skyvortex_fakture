@@ -2,6 +2,7 @@
 
 namespace App\Actions\Invoices;
 
+use App\Enums\VatCategory;
 use App\Models\Invoice;
 use App\Support\InvoiceTotals;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,7 @@ class SaveInvoiceItems
                     'discount_percent' => $item['discount_percent'] ?? 0,
                     'vat_rate' => $item['vat_rate'] ?? 0,
                     'vat_category' => $item['vat_category'] ?? 'S',
-                    'vat_exemption_reason_id' => $item['vat_exemption_reason_id'] ?? null,
+                    'vat_exemption_reason_id' => $this->exemptionReasonFor($invoice, $item),
                     ...$amounts,
                 ]);
             }
@@ -53,5 +54,26 @@ class SaveInvoiceItems
 
             return $invoice->refresh();
         });
+    }
+
+    /**
+     * A line that charges no VAT has to say under which article, and EN 16931
+     * asks for it per VAT category, not once per document. Nobody types it on
+     * every line, so a line without one inherits the document's basis — which
+     * itself comes from the company.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function exemptionReasonFor(Invoice $invoice, array $item): ?int
+    {
+        if (($item['vat_exemption_reason_id'] ?? null) !== null) {
+            return (int) $item['vat_exemption_reason_id'];
+        }
+
+        $category = VatCategory::tryFrom((string) ($item['vat_category'] ?? VatCategory::Standard->value));
+
+        return $category?->requiresExemptionReason()
+            ? $invoice->vat_exemption_reason_id
+            : null;
     }
 }

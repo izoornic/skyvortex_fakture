@@ -3,6 +3,7 @@
 namespace App\Actions\Invoices;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\VatCategory;
 use App\Models\Invoice;
 use App\Support\PaymentReference;
 use Illuminate\Support\Facades\DB;
@@ -63,8 +64,30 @@ class IssueInvoice
             $errors['exchange_rate'] = 'Za stranu valutu mora biti unet kurs.';
         }
 
+        if ($this->hasLineWithoutExemptionBasis($invoice)) {
+            $errors['vat_exemption_reason_id'] = 'Stavka na kojoj PDV nije obračunat mora imati osnov oslobođenja. '
+                .'Izaberi ga na dokumentu ili kao podrazumevani na pravnom licu.';
+        }
+
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
+    }
+
+    /**
+     * Which categories owe a legal basis is decided by the enum, never spelled
+     * out again in a query — see `VatCategory::requiresExemptionReason()`.
+     */
+    private function hasLineWithoutExemptionBasis(Invoice $invoice): bool
+    {
+        $categories = collect(VatCategory::cases())
+            ->filter(fn (VatCategory $category) => $category->requiresExemptionReason())
+            ->map(fn (VatCategory $category) => $category->value)
+            ->all();
+
+        return $invoice->items()
+            ->whereNull('vat_exemption_reason_id')
+            ->whereIn('vat_category', $categories)
+            ->exists();
     }
 }

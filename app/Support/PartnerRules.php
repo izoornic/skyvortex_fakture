@@ -25,6 +25,13 @@ class PartnerRules
             'type' => ['required', Rule::enum(PartnerType::class)],
             'name' => ['required', 'string', 'max:255'],
 
+            // A group belongs to one issuer, so a partner may only join one of
+            // that issuer's groups.
+            'partner_group_id' => [
+                'nullable',
+                Rule::exists('partner_groups', 'id')->where('company_id', $company->id),
+            ],
+
             'pib' => [
                 $needsTaxNumber ? 'required' : 'nullable',
                 'nullable',

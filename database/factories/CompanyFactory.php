@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\CompanyType;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,6 +19,7 @@ class CompanyFactory extends Factory
         $name = fake()->company();
 
         return [
+            'type' => CompanyType::LegalEntity,
             'name' => $name.' d.o.o.',
             // Derived from the name, the way a real short name would be. Two
             // unrelated faker names made one company look like two.
@@ -35,6 +37,18 @@ class CompanyFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'is_active' => true,
         ];
+    }
+
+    public function housingCommunity(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => CompanyType::HousingCommunity,
+            'name' => 'Stambena zajednica '.fake()->streetAddress(),
+            'short_name' => null,
+            'activity_code' => null,
+            'jbkjs' => null,
+            'in_vat_system' => false,
+        ]);
     }
 
     public function outsideVatSystem(): static

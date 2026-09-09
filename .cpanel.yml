@@ -1,0 +1,31 @@
+---
+# cPanel Git Version Control — deploy iz klona repozitorijuma u radni direktorijum
+# aplikacije. Document root domena/poddomena treba da pokazuje na
+# /home/skyvorte/fakture_app/public
+#
+# Pre commita lokalno pokreni `npm run build` — `public/build` ide u git, jer se
+# na sharedu ne oslanjamo na Node.
+#
+# Ako composer ili PHP nisu na putanjama ispod, izmeni samo prve tri linije.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/skyvorte/fakture_app
+    - export PHPBIN=/opt/cpanel/ea-php84/root/usr/bin/php
+    - export COMPOSERBIN=/opt/cpanel/composer/bin/composer
+
+    # .env, storage/ i vendor/ pripadaju serveru i deploy ih ne dira.
+    # --delete uklanja fajlove koji su u međuvremenu izbačeni iz repozitorijuma.
+    - /bin/mkdir -p $DEPLOYPATH
+    - >-
+      /usr/bin/rsync -a --delete
+      --exclude=.git --exclude=.github --exclude=.env
+      --exclude=storage --exclude=vendor --exclude=node_modules
+      --exclude=tests --exclude=.ai --exclude=.claude
+      --exclude=public/storage
+      ./ $DEPLOYPATH/
+
+    # storage/ je isključen iz kopiranja, pa prvi deploy mora sam da ga napravi.
+    - /bin/mkdir -p $DEPLOYPATH/storage/app/private $DEPLOYPATH/storage/framework/cache/data $DEPLOYPATH/storage/framework/sessions $DEPLOYPATH/storage/framework/views $DEPLOYPATH/storage/logs $DEPLOYPATH/bootstrap/cache
+    - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
+
+    - cd $DEPLOYPATH && $PHPBIN -d memory_limit=-1 $COMPOSERBIN install --no-dev --optimize-autoloader --no-interaction --prefer-dist

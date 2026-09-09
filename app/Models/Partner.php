@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Partner extends Model
@@ -19,6 +20,7 @@ class Partner extends Model
 
     protected $fillable = [
         'company_id',
+        'partner_group_id',
         'type',
         'name',
         'pib',
@@ -70,10 +72,25 @@ class Partner extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    /**
+     * The group the partner belongs to, if any. Membership decides only where
+     * the invoices are delivered, never how they are made.
+     */
+    public function partnerGroup(): BelongsTo
+    {
+        return $this->belongsTo(PartnerGroup::class);
+    }
+
     #[Scope]
     protected function active(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    #[Scope]
+    protected function inGroup(Builder $query, int $partnerGroupId): Builder
+    {
+        return $query->where('partner_group_id', $partnerGroupId);
     }
 
     #[Scope]

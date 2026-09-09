@@ -3,6 +3,7 @@
 use App\Enums\PartnerType;
 use App\Models\Currency;
 use App\Models\Partner;
+use App\Models\PartnerGroup;
 use App\Support\CurrentCompany;
 use App\Support\PartnerRules;
 use Illuminate\Support\Facades\Gate;
@@ -11,6 +12,7 @@ use Livewire\Volt\Component;
 new class extends Component {
     public ?Partner $partner = null;
 
+    public string $partner_group_id = '';
     public string $type = '';
     public string $name = '';
     public string $pib = '';
@@ -41,7 +43,7 @@ new class extends Component {
             foreach ([
                 'name', 'pib', 'registration_number', 'jmbg', 'vat_id', 'jbkjs',
                 'address', 'city', 'postal_code', 'country_code', 'email', 'phone',
-                'contact_person', 'default_currency', 'notes',
+                'contact_person', 'default_currency', 'notes', 'partner_group_id',
             ] as $field) {
                 $this->{$field} = (string) $this->partner->{$field};
             }
@@ -96,7 +98,8 @@ new class extends Component {
         );
 
         foreach (['pib', 'registration_number', 'jmbg', 'vat_id', 'jbkjs', 'address',
-            'city', 'postal_code', 'email', 'phone', 'contact_person', 'notes'] as $optional) {
+            'city', 'postal_code', 'email', 'phone', 'contact_person', 'notes',
+            'partner_group_id'] as $optional) {
             $data[$optional] = $data[$optional] ?: null;
         }
 
@@ -117,6 +120,14 @@ new class extends Component {
             'partnerType' => $type,
             'types' => PartnerType::options(),
             'currencies' => Currency::query()->active()->ordered()->get(),
+            // An inactive group stays on the list while it still holds this
+            // partner, so opening the form does not quietly drop the membership.
+            'partnerGroups' => PartnerGroup::query()
+                ->where(fn ($query) => $query
+                    ->where('is_active', true)
+                    ->orWhere('id', $this->partner_group_id ?: 0))
+                ->orderBy('name')
+                ->get(),
         ];
     }
 
@@ -210,6 +221,19 @@ new class extends Component {
             <flux:legend>Kontakt</flux:legend>
 
             <div class="grid gap-4 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <flux:select wire:model="partner_group_id" label="Grupa"
+                        description="Grupa prima jedan PDF sa fakturama svih svojih partnera. Faktura i dalje glasi na ovog partnera.">
+                        <flux:select.option value="" :selected="$partner_group_id === ''">Bez grupe</flux:select.option>
+                        @foreach ($partnerGroups as $groupOption)
+                            <flux:select.option value="{{ $groupOption->id }}"
+                                :selected="(string) $groupOption->id === $partner_group_id">
+                                {{ $groupOption->name }}@unless ($groupOption->is_active) (neaktivna)@endunless
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </div>
+
                 <flux:input wire:model="email" label="E-pošta" type="email" />
                 <flux:input wire:model="phone" label="Telefon" />
                 <div class="sm:col-span-2">

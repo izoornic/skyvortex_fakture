@@ -3,33 +3,33 @@
 namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
+/**
+ * There is no self-registration: accounts are opened by an administrator on
+ * `users.create`. The tests below are what keeps the starter kit's screen from
+ * quietly coming back.
+ */
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_can_be_rendered(): void
+    public function test_the_registration_screen_is_gone(): void
     {
-        $response = $this->get('/register');
-
-        $response->assertStatus(200);
+        $this->get('/register')->assertNotFound();
     }
 
-    public function test_new_users_can_register(): void
+    public function test_nothing_links_to_a_registration_route(): void
     {
-        $response = Volt::test('auth.register')
-            ->set('name', 'Test User')
-            ->set('email', 'test@example.com')
-            ->set('password', 'password')
-            ->set('password_confirmation', 'password')
-            ->call('register');
+        $this->assertFalse(Route::has('register'));
+    }
 
-        $response
-            ->assertHasNoErrors()
-            ->assertRedirect(route('dashboard', absolute: false));
-
-        $this->assertAuthenticated();
+    public function test_the_login_screen_offers_no_way_to_sign_up(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertDontSee('register')
+            ->assertDontSee('Sign up');
     }
 }

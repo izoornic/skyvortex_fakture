@@ -6,6 +6,7 @@ use App\Enums\DocumentType;
 use App\Enums\InvoiceStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToCompany;
+use App\Support\PeriodLabel;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Invoice extends Model
 {
@@ -47,6 +49,7 @@ class Invoice extends Model
         'vat_exemption_reason_id',
         'place_of_issue',
         'note',
+        'valid_without_signature',
         'internal_note',
         'contract_id',
         'source_invoice_id',
@@ -59,6 +62,7 @@ class Invoice extends Model
     ];
 
     protected $attributes = [
+        'valid_without_signature' => true,
         'type' => DocumentType::Invoice->value,
         'status' => InvoiceStatus::Draft->value,
         'currency' => 'RSD',
@@ -87,6 +91,7 @@ class Invoice extends Model
             'total_rsd' => 'decimal:2',
             'period_year' => 'integer',
             'period_month' => 'integer',
+            'valid_without_signature' => 'boolean',
         ];
     }
 
@@ -123,6 +128,14 @@ class Invoice extends Model
     public function sourceInvoice(): BelongsTo
     {
         return $this->belongsTo(self::class, 'source_invoice_id');
+    }
+
+    /**
+     * The contract this document came out of, when it was not made by hand.
+     */
+    public function contract(): BelongsTo
+    {
+        return $this->belongsTo(Contract::class);
     }
 
     #[Scope]
@@ -178,12 +191,25 @@ class Invoice extends Model
 
     public function periodLabel(): string
     {
-        $months = [
-            1 => 'januar', 'februar', 'mart', 'april', 'maj', 'jun',
-            'jul', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar',
-        ];
+        return PeriodLabel::for($this->period_year, $this->period_month);
+    }
 
-        return ($months[$this->period_month] ?? '').' '.$this->period_year.'.';
+    /**
+     * Every legal basis this document relies on, each one once, the document's
+     * own first. A document that mixes VAT categories carries one basis per
+     * category — that is how EN 16931 states it, and how it has to be printed.
+     *
+     * @return Collection<int, VatExemptionReason>
+     */
+    public function exemptionReasons(): Collection
+    {
+        $this->loadMissing(['vatExemptionReason', 'items.vatExemptionReason']);
+
+        return collect([$this->vatExemptionReason])
+            ->merge($this->items->pluck('vatExemptionReason'))
+            ->filter()
+            ->unique('id')
+            ->values();
     }
 
     /**

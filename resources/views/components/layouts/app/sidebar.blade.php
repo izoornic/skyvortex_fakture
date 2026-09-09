@@ -21,8 +21,11 @@
                 </flux:navlist.group>
 
                 <flux:navlist.group heading="Fakturisanje" class="grid">
-                    <flux:navlist.item icon="document-text" :href="route('invoices.index')" :current="request()->routeIs('invoices.*')" wire:navigate>Fakture</flux:navlist.item>
+                    <flux:navlist.item icon="document-text" :href="route('invoices.index')" :current="request()->routeIs('invoices.index') || request()->routeIs('invoices.show') || request()->routeIs('invoices.create') || request()->routeIs('invoices.edit')" wire:navigate>Fakture</flux:navlist.item>
+                    <flux:navlist.item icon="calendar-days" :href="route('invoices.monthly')" :current="request()->routeIs('invoices.monthly')" wire:navigate>Mesečno fakturisanje</flux:navlist.item>
+                    <flux:navlist.item icon="document-duplicate" :href="route('contracts.index')" :current="request()->routeIs('contracts.*')" wire:navigate>Ugovori</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('partners.index')" :current="request()->routeIs('partners.*')" wire:navigate>Partneri</flux:navlist.item>
+                    <flux:navlist.item icon="user-group" :href="route('partner-groups.index')" :current="request()->routeIs('partner-groups.*')" wire:navigate>Grupe partnera</flux:navlist.item>
                 </flux:navlist.group>
 
                 <flux:navlist.group heading="Podešavanje" class="grid">
@@ -39,13 +42,7 @@
             <flux:spacer />
 
             <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    Repository
-                </flux:navlist.item>
-
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits" target="_blank">
-                    Documentation
-                </flux:navlist.item>
+                
             </flux:navlist>
 
             <!-- Desktop User Menu -->

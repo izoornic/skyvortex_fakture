@@ -31,6 +31,7 @@ new class extends Component {
     public ?int $vat_exemption_reason_id = null;
     public string $place_of_issue = '';
     public string $note = '';
+    public bool $valid_without_signature = true;
     public string $internal_note = '';
 
     /** @var list<array<string, mixed>> */
@@ -68,6 +69,7 @@ new class extends Component {
         $this->vat_exemption_reason_id = $invoice->vat_exemption_reason_id;
         $this->place_of_issue = (string) $invoice->place_of_issue;
         $this->note = (string) $invoice->note;
+        $this->valid_without_signature = (bool) $invoice->valid_without_signature;
         $this->internal_note = (string) $invoice->internal_note;
 
         $this->items = $invoice->items->map(fn ($item) => [
@@ -95,6 +97,7 @@ new class extends Component {
         $this->currency = $company->default_currency;
         $this->place_of_issue = (string) $company->city;
         $this->bank_account_id = $company->primaryBankAccount?->id ?? $company->bankAccounts()->first()?->id;
+        $this->vat_exemption_reason_id = $company->vat_exemption_reason_id;
 
         $this->addItem();
     }
@@ -157,6 +160,7 @@ new class extends Component {
             'vat_exemption_reason_id' => $data['vat_exemption_reason_id'] ?: null,
             'place_of_issue' => $data['place_of_issue'] ?: null,
             'note' => $data['note'] ?: null,
+            'valid_without_signature' => $data['valid_without_signature'],
             'internal_note' => $data['internal_note'] ?: null,
         ];
 
@@ -208,6 +212,7 @@ new class extends Component {
             'vat_exemption_reason_id' => ['nullable', Rule::exists('vat_exemption_reasons', 'id')],
             'place_of_issue' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:2000'],
+            'valid_without_signature' => ['boolean'],
             'internal_note' => ['nullable', 'string', 'max:2000'],
 
             'items' => ['required', 'array', 'min:1'],
@@ -330,8 +335,8 @@ new class extends Component {
 
             <div class="grid gap-4 sm:grid-cols-3">
                 <flux:select wire:model.live="currency" label="Valuta" required>
-                    @foreach ($currencies as $currency)
-                        <flux:select.option value="{{ $currency->code }}" :selected="$currency->code === $this->currency">{{ $currency->code }}</flux:select.option>
+                    @foreach ($currencies as $currencyOption)
+                        <flux:select.option value="{{ $currencyOption->code }}" :selected="$currencyOption->code === $this->currency">{{ $currencyOption->code }}</flux:select.option>
                     @endforeach
                 </flux:select>
 
@@ -459,6 +464,11 @@ new class extends Component {
         <div class="grid gap-6 sm:grid-cols-2">
             <div class="space-y-4">
                 <flux:textarea wire:model="note" label="Napomena na dokumentu" rows="3" />
+
+                <flux:checkbox wire:model="valid_without_signature"
+                    label="Validno bez pečata i potpisa"
+                    description="Na dokument se štampa: „Ova faktura je validna u elektronskom obliku bez pečata i potpisa!”, a mesto za potpis i pečat se izostavlja." />
+
                 <flux:textarea wire:model="internal_note" label="Interna napomena"
                     description="Ne štampa se na dokumentu" rows="2" />
             </div>

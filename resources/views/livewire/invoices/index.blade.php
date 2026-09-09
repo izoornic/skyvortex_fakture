@@ -1,7 +1,9 @@
 <?php
 
+use App\Actions\PartnerGroups\CollectGroupInvoices;
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
+use App\Models\PartnerGroup;
 use App\Support\CurrentCompany;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
@@ -20,6 +22,9 @@ new class extends Component {
     #[Url(as: 'status', except: '')]
     public string $status = '';
 
+    #[Url(as: 'grupa', except: '')]
+    public string $groupId = '';
+
     #[Url(as: 'q', except: '')]
     public string $search = '';
 
@@ -33,7 +38,7 @@ new class extends Component {
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['year', 'month', 'status', 'search'], true)) {
+        if (in_array($property, ['year', 'month', 'status', 'search', 'groupId'], true)) {
             $this->resetPage();
         }
     }
@@ -67,6 +72,10 @@ new class extends Component {
         return Invoice::query()
             ->inPeriod($this->year, $this->month)
             ->when($this->status !== '', fn ($q) => $q->where('status', $this->status))
+            ->when($this->groupId !== '', fn ($q) => $q->whereHas(
+                'partner',
+                fn ($p) => $p->where('partner_group_id', (int) $this->groupId)
+            ))
             ->when($this->search !== '', function ($query) {
                 $term = '%'.$this->search.'%';
 
@@ -80,6 +89,10 @@ new class extends Component {
     {
         $countable = (clone $this->baseQuery())->countable();
 
+        $selectedGroup = $this->groupId === ''
+            ? null
+            : PartnerGroup::query()->find((int) $this->groupId);
+
         return [
             'company' => app(CurrentCompany::class)->get(),
             'invoices' => $this->baseQuery()
@@ -88,6 +101,13 @@ new class extends Component {
                 ->orderByDesc('id')
                 ->paginate(config('global.paginate')),
             'statuses' => InvoiceStatus::options(),
+            'groups' => PartnerGroup::query()->orderBy('name')->get(),
+            'selectedGroup' => $selectedGroup,
+            // What the bundle would carry: the period only, never the status or
+            // the search term on the screen.
+            'bundleCount' => $selectedGroup
+                ? app(CollectGroupInvoices::class)->handle($selectedGroup, $this->year, $this->month)->count()
+                : 0,
             'summary' => [
                 'count' => (clone $countable)->count(),
                 'total_rsd' => (float) (clone $countable)->sum('total_rsd'),
@@ -138,7 +158,34 @@ new class extends Component {
                     <flux:select.option value="{{ $value }}" :selected="$value === $status">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
+
+            @if ($groups->isNotEmpty())
+                <flux:select class="max-w-56" wire:model.live="groupId">
+                    <flux:select.option value="" :selected="$groupId === ''">Sve grupe</flux:select.option>
+                    @foreach ($groups as $groupOption)
+                        <flux:select.option value="{{ $groupOption->id }}"
+                            :selected="(string) $groupOption->id === $groupId">
+                            {{ $groupOption->name }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
+
+            @if ($selectedGroup && $bundleCount > 0)
+                <flux:button size="sm" icon="document-text"
+                    :href="route('partner-groups.pdf', ['partnerGroup' => $selectedGroup, 'god' => $year, 'mes' => $month])"
+                    target="_blank">
+                    Objedinjeni PDF ({{ $bundleCount }})
+                </flux:button>
+            @endif
         </div>
+
+        @if ($selectedGroup && $bundleCount > 0)
+            <div class="mt-2 text-xs text-zinc-500">
+                Objedinjeni PDF nosi izdate fakture grupe za {{ $periodLabel }} — status i pretraga
+                sa ovog ekrana ne ulaze u dokument.
+            </div>
+        @endif
 
         <div class="mt-4 flex flex-wrap gap-2">
             <flux:badge color="zinc">izdato: {{ $summary['count'] }}</flux:badge>

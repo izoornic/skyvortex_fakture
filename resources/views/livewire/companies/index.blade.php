@@ -96,6 +96,11 @@ new class extends Component {
                                 @if ($company->short_name && $company->short_name !== $company->name)
                                     <div class="text-xs text-zinc-500">{{ $company->short_name }}</div>
                                 @endif
+                                {{-- A stambena zajednica is not a company; a list that
+                                     calls it one misleads whoever reads it. --}}
+                                @if ($company->type !== \App\Enums\CompanyType::LegalEntity)
+                                    <flux:badge size="sm" color="blue">{{ $company->type->label() }}</flux:badge>
+                                @endif
                                 @unless ($company->is_active)
                                     <flux:badge size="sm" color="zinc">neaktivno</flux:badge>
                                 @endunless

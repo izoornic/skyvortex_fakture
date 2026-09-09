@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Invoices\CancelInvoice;
+use App\Actions\Invoices\CopyInvoiceToNextPeriod;
 use App\Actions\Invoices\IssueInvoice;
 use App\Mail\InvoiceMail;
 use App\Models\Invoice;
@@ -44,6 +45,22 @@ new class extends Component {
         }
 
         session()->flash('status', "Dokument je izdat pod brojem {$this->invoice->number}.");
+    }
+
+    /**
+     * For clients that recur without a contract: the same document, one period
+     * on, as a fresh draft to check over.
+     */
+    public function copyToNextPeriod(CopyInvoiceToNextPeriod $action): void
+    {
+        Gate::authorize('create', Invoice::class);
+        Gate::authorize('view', $this->invoice);
+
+        $copy = $action->handle($this->invoice->load('items'));
+
+        session()->flash('status', 'Napravljen je nacrt za '.$copy->periodLabel());
+
+        $this->redirect(route('invoices.edit', $copy), navigate: true);
     }
 
     public function cancel(CancelInvoice $action): void
@@ -143,6 +160,13 @@ new class extends Component {
 
             @can('send', $invoice)
                 <flux:button size="sm" icon="envelope" wire:click="$set('showSendModal', true)">Pošalji</flux:button>
+            @endcan
+
+            @can('create', App\Models\Invoice::class)
+                <flux:button size="sm" icon="document-duplicate" wire:click="copyToNextPeriod"
+                    wire:confirm="Napraviti nacrt za naredni period sa istim stavkama?">
+                    Kopiraj u naredni mesec
+                </flux:button>
             @endcan
 
             @can('cancel', $invoice)
@@ -301,6 +325,14 @@ new class extends Component {
                 <div class="mt-4 text-sm">
                     <div class="text-zinc-500">Interna napomena (ne štampa se)</div>
                     <p>{{ $invoice->internal_note }}</p>
+                </div>
+            @endif
+
+            {{-- An issued document can no longer be opened in the form, so the
+                 mark has to be visible here. --}}
+            @if ($invoice->valid_without_signature)
+                <div class="mt-4 text-sm italic text-zinc-500">
+                    Ova faktura je validna u elektronskom obliku bez pečata i potpisa!
                 </div>
             @endif
         </div>
