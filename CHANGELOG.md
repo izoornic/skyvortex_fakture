@@ -409,6 +409,15 @@ tada još nije bio pod verzionom kontrolom.
 
 ### Ispravljeno
 
+- **Deploy na cPanel je padao na pogrešnim putanjama.** `.cpanel.yml` je gađao
+  `/opt/cpanel/ea-php84/root/usr/bin/php` i `/opt/cpanel/composer/bin/composer`, a server
+  je CloudLinux sa alt-php-om — ispravno je `/opt/alt/php84/usr/bin/php` i
+  `/usr/local/bin/composer`, kako stoji u `spa-booking` projektu koji se uspešno deployuje
+  na isti nalog. Kopiranje je prebačeno sa `rsync` na `/bin/cp -a *`, iz istog razloga.
+  Dodato je i brisanje `bootstrap/cache/{packages,services,config,compiled}.php` pre
+  `composer install`, da `package:discover` ne čita zatečeni keš, kao i `rm -rf` nad
+  `tests/` u odredištu, pošto `cp -a *` više ne ume da ih preskoči.
+
 - **Na fakturama firme van sistema PDV-a nije pisao pravni osnov.** PDF je ispisivao samo
   „Izdavalac nije u sistemu PDV-a.", a dopunu sa članom zakona tek `@if` na
   `invoice->vatExemptionReason` — koji nikad nije bio popunjen, jer se osnov birao ručno
