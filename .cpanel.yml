@@ -6,12 +6,14 @@
 # Pre commita lokalno pokreni `npm run build` — `public/build` ide u git, jer se
 # na sharedu ne oslanjamo na Node.
 #
-# Ako composer ili PHP nisu na putanjama ispod, izmeni samo prve tri linije.
+# PHPBIN je namerno /usr/local/bin/php, podrazumevani PHP naloga (8.4), a ne
+# konkretan ea-php84/alt-php84: domen nema AddHandler override u public/.htaccess,
+# pa prati MultiPHP Manager i onda kad hoster promeni verziju.
 deployment:
   tasks:
     - export DEPLOYPATH=/home/skyvorte/fakture_app
-    - export PHPBIN=/opt/cpanel/ea-php84/root/usr/bin/php
-    - export COMPOSERBIN=/opt/cpanel/composer/bin/composer
+    - export PHPBIN=/usr/local/bin/php
+    - export COMPOSERBIN=/usr/local/bin/composer
 
     # .env, storage/ i vendor/ pripadaju serveru i deploy ih ne dira.
     # --delete uklanja fajlove koji su u međuvremenu izbačeni iz repozitorijuma.
@@ -27,5 +29,9 @@ deployment:
     # storage/ je isključen iz kopiranja, pa prvi deploy mora sam da ga napravi.
     - /bin/mkdir -p $DEPLOYPATH/storage/app/private $DEPLOYPATH/storage/framework/cache/data $DEPLOYPATH/storage/framework/sessions $DEPLOYPATH/storage/framework/views $DEPLOYPATH/storage/logs $DEPLOYPATH/bootstrap/cache
     - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
+
+    # Stari keš mora da nestane pre composer install-a, jer package:discover iz
+    # post-autoload-dump skripte čita zatečeni packages.php.
+    - /bin/rm -f $DEPLOYPATH/bootstrap/cache/packages.php $DEPLOYPATH/bootstrap/cache/services.php $DEPLOYPATH/bootstrap/cache/config.php $DEPLOYPATH/bootstrap/cache/compiled.php
 
     - cd $DEPLOYPATH && $PHPBIN -d memory_limit=-1 $COMPOSERBIN install --no-dev --optimize-autoloader --no-interaction --prefer-dist

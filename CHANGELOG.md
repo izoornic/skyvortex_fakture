@@ -409,6 +409,15 @@ tada još nije bio pod verzionom kontrolom.
 
 ### Ispravljeno
 
+- **Deploy na cPanel je padao na nepostojećem composer-u.** `.cpanel.yml` je pozivao
+  `/opt/cpanel/composer/bin/composer`, kojeg na nalogu nema — composer je na
+  `/usr/local/bin/composer`. Poslednji task je vraćao 127 i rušio ceo deploy, pa na server
+  nikada nije stizao `composer install`. `PHPBIN` je prebačen na `/usr/local/bin/php`
+  (podrazumevani PHP naloga, 8.4), pošto domen nema `AddHandler` override u
+  `public/.htaccess` i time prati MultiPHP Manager. Dodato je i brisanje
+  `bootstrap/cache/{packages,services,config,compiled}.php` pre instalacije, da
+  `package:discover` iz `post-autoload-dump` skripte ne čita zatečeni keš.
+
 - **Na fakturama firme van sistema PDV-a nije pisao pravni osnov.** PDF je ispisivao samo
   „Izdavalac nije u sistemu PDV-a.", a dopunu sa članom zakona tek `@if` na
   `invoice->vatExemptionReason` — koji nikad nije bio popunjen, jer se osnov birao ručno
