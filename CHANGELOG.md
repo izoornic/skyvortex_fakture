@@ -409,6 +409,23 @@ tada još nije bio pod verzionom kontrolom.
 
 ### Ispravljeno
 
+- **Aplikacija je merila vreme po serveru, a ne po Srbiji.** `config/app.php` je držao
+  `'timezone' => 'UTC'` bez `env()` ključa, pa je na sharedu (koji radi u UTC-u) svaki
+  `now()` kasnio sat-dva. Formular fakture iz toga izvlači `issue_date`, `supply_date`,
+  `due_date` i obračunski period: dokument otvoren posle ponoći dobijao je jučerašnji
+  datum, a prvog u mesecu i prethodni period. Sada je `env('APP_TIMEZONE',
+  'Europe/Belgrade')`, uz `APP_TIMEZONE=Europe/Belgrade` u `.env.example`.
+  Podrazumevani jezik je iz istog razloga `sr` umesto `en` (a `faker_locale` `sr_RS`) —
+  `.env` na serveru se podešava ručno i ključ ume da izostane.
+
+- **Naslov perioda na spisku faktura ispisivao je engleski naziv meseca.**
+  `resources/views/livewire/invoices/index.blade.php` je jedini koristio Carbon-ov
+  `translatedFormat('F Y')`, koji zavisi od lokala aplikacije, pa je uz nepodešen
+  `APP_LOCALE` pisalo „September 2026." dok je ostatak ekrana pisao „septembar".
+  Sada i on ide kroz `App\Support\PeriodLabel`, jedino mesto sa nazivima meseci.
+
+- 3 nova testa: `tests/Feature/AppTimeAndLocaleTest.php`.
+
 - **Deploy na cPanel je padao na nepostojećem composer-u.** `.cpanel.yml` je pozivao
   `/opt/cpanel/composer/bin/composer`, kojeg na nalogu nema — composer je na
   `/usr/local/bin/composer`. Poslednji task je vraćao 127 i rušio ceo deploy, pa na server

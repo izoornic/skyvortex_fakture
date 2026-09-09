@@ -5,6 +5,7 @@ use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
 use App\Models\PartnerGroup;
 use App\Support\CurrentCompany;
+use App\Support\PeriodLabel;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Volt\Component;
@@ -113,8 +114,10 @@ new class extends Component {
                 'total_rsd' => (float) (clone $countable)->sum('total_rsd'),
                 'drafts' => (clone $this->baseQuery())->drafts()->count(),
             ],
+            // Nazivi meseci idu isključivo kroz PeriodLabel — Carbon bi ih
+            // preveo po lokalu, koji na serveru ne mora biti podešen.
             'periodLabel' => $this->month
-                ? now()->setDate($this->year, $this->month, 1)->translatedFormat('F Y').'.'
+                ? PeriodLabel::for($this->year, $this->month)
                 : $this->year.'.',
         ];
     }
