@@ -6,6 +6,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | app/Actions/** | .ai/rules/actions.md |
 | app/Actions/Contracts/** | .ai/rules/contracts.md |
+| .cpanel.yml | .ai/rules/general.md |
 | app/Actions/Invoices/** | .ai/rules/invoices.md |
 | resources/views/livewire/** | .ai/rules/livewire.md |
 | app/Actions/PartnerGroups/** | .ai/rules/partner-groups.md |
