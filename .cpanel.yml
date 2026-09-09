@@ -15,18 +15,14 @@ deployment:
     - export PHPBIN=/usr/local/bin/php
     - export COMPOSERBIN=/usr/local/bin/composer
 
-    # .env, storage/ i vendor/ pripadaju serveru i deploy ih ne dira.
-    # --delete uklanja fajlove koji su u međuvremenu izbačeni iz repozitorijuma.
+    # `cp -a *` ne dira skrivene fajlove, pa .env, .git, .ai i .claude ostaju
+    # kakvi jesu. vendor/ i node_modules/ nisu u repozitorijumu.
     - /bin/mkdir -p $DEPLOYPATH
-    - >-
-      /usr/bin/rsync -a --delete
-      --exclude=.git --exclude=.github --exclude=.env
-      --exclude=storage --exclude=vendor --exclude=node_modules
-      --exclude=tests --exclude=.ai --exclude=.claude
-      --exclude=public/storage
-      ./ $DEPLOYPATH/
+    - /bin/cp -a * $DEPLOYPATH
+    - /bin/rm -rf $DEPLOYPATH/tests
 
-    # storage/ je isključen iz kopiranja, pa prvi deploy mora sam da ga napravi.
+    # storage/ u repozitorijumu ima samo .gitignore fajlove, pa prvi deploy mora
+    # sam da napravi pod-direktorijume koje Laravel očekuje.
     - /bin/mkdir -p $DEPLOYPATH/storage/app/private $DEPLOYPATH/storage/framework/cache/data $DEPLOYPATH/storage/framework/sessions $DEPLOYPATH/storage/framework/views $DEPLOYPATH/storage/logs $DEPLOYPATH/bootstrap/cache
     - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
 
